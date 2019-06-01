@@ -93,13 +93,12 @@ function seqPrims(G, numberOfNodes)
 
     # Creates an array containing the edges that make up the MST
     edges = [];
-    for i in 1:numberOfNodes
+    for i in 2:numberOfNodes
         currentEdge = Edge(Int(from[i]), i);
         push!(edges, currentEdge);
     end
     return edges;
 end
-
 
 # TEST SCRIPT
 graphWidth = 100;

@@ -68,7 +68,7 @@ function drawEdges(mazeEdges, graphWidth::Int64, pictureName::String)
 end;
 
 # Finds the node with the lowest edge weight currently in key
-function minKey(key, visited, numberOfNodes)
+function seqMinKey(key, visited, numberOfNodes)
     # Creates atomic global variables
     globalMin = Threads.Atomic{Float64}(Inf);
     globalIndex = Threads.Atomic{Int}(1);
@@ -95,7 +95,7 @@ function minKey(key, visited, numberOfNodes)
     return globalIndex[];
 end
 
-function parallelPrims(G, numberOfNodes)
+function seqPrims(G, numberOfNodes)
     # Create adjacency matrix
     weights_matrix = weights(G);
 
@@ -114,7 +114,7 @@ function parallelPrims(G, numberOfNodes)
 
     # Chooses which node to travel to based off what has the lowest value in key
     for count in 1:(numberOfNodes-1)
-        nextNode = minKey(key, visited, numberOfNodes);
+        nextNode = seqMinKey(key, visited, numberOfNodes);
         visited[nextNode] = 1;
 
         # Updates the key array so that it contains the lowest weights of all possible paths
@@ -129,7 +129,7 @@ function parallelPrims(G, numberOfNodes)
 
     # Creates an array containing the edges that make up the MST
     edges = [];
-    for i in 1:numberOfNodes
+    for i in 2:numberOfNodes
         currentEdge = Edge(Int(from[i]), i);
         push!(edges, currentEdge);
     end

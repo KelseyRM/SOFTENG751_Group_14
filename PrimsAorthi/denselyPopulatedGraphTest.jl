@@ -13,7 +13,7 @@ function createTestGraph(graphSize)
     G = SimpleWeightedGraph(graphSize);
 
     for i in 1:(graphSize*5)
-        add_edge!(G, rand(1:graphSize), rand(1:graphSize), rand(0:10));
+        add_edge!(G, rand(1:graphSize), rand(1:graphSize), rand(Float64)*10);
     end
     return G;
 end
@@ -31,7 +31,6 @@ function parallelMinKey(key, visited, numberOfNodes)
 
     # Goes through each unvisited node and checks to see if its edge weight is small than the current local minimum weight
     Threads.@threads for i in 1:numberOfNodes
-    #for i in 1:numberOfNodes
        if ((visited[i] == 0) && key[i] < localMin)
             localMin = key[i];
             localIndex = i;
@@ -73,7 +72,6 @@ function parallelPrims(G, numberOfNodes)
 
         # Updates the key array so that it contains the lowest weights of all possible paths
         Threads.@threads for possibleNode in 1:numberOfNodes
-        #for possibleNode in 1:numberOfNodes
             # checks that there is an edge between the nodes, that the node hasn't been visited already and that the weight is smaller than the current edge weight in key
             if ((weights_matrix[nextNode, possibleNode] != 0) && (visited[possibleNode] == 0) && (weights_matrix[nextNode, possibleNode] < key[possibleNode]))
                 from[possibleNode] = nextNode;
@@ -84,7 +82,7 @@ function parallelPrims(G, numberOfNodes)
 
     # Creates an array containing the edges that make up the MST
     edges = [];
-    for i in 1:numberOfNodes
+    for i in 2:numberOfNodes
         currentEdge = Edge(Int(from[i]), i);
         push!(edges, currentEdge);
     end
@@ -92,6 +90,7 @@ function parallelPrims(G, numberOfNodes)
 end
 
 # SEQUENTIAL CODE
+
 # Finds the node with the lowest edge weight currently in key
 function seqMinKey(key, visited, numberOfNodes)
     # Creates atomic global variables
@@ -102,7 +101,6 @@ function seqMinKey(key, visited, numberOfNodes)
     localIndex = 1;
 
     # Goes through each unvisited node and checks to see if its edge weight is small than the current local minimum weight
-    #Threads.@threads for i in 1:numberOfNodes
     for i in 1:numberOfNodes
        if ((visited[i] == 0) && key[i] < localMin)
             localMin = key[i];
@@ -144,7 +142,6 @@ function seqPrims(G, numberOfNodes)
         visited[nextNode] = 1;
 
         # Updates the key array so that it contains the lowest weights of all possible paths
-        #Threads.@threads for possibleNode in 1:numberOfNodes
         for possibleNode in 1:numberOfNodes
             # checks that there is an edge between the nodes, that the node hasn't been visited already and that the weight is smaller than the current edge weight in key
             if ((weights_matrix[nextNode, possibleNode] != 0) && (visited[possibleNode] == 0) && (weights_matrix[nextNode, possibleNode] < key[possibleNode]))
@@ -156,7 +153,7 @@ function seqPrims(G, numberOfNodes)
 
     # Creates an array containing the edges that make up the MST
     edges = [];
-    for i in 1:numberOfNodes
+    for i in 2:numberOfNodes
         currentEdge = Edge(Int(from[i]), i);
         push!(edges, currentEdge);
     end
@@ -170,13 +167,15 @@ g = createTestGraph(nodes);
 #seqPrim = seqPrims(g, nodes);
 #paraPrim = parallelPrims(g, nodes);
 
+#=
 println("Number of Vertices: ", nodes)
 println("Base library's Prim's (seq):")
-@benchmark LightGraphs.prim_mst(g)
+@benchmark LightGraphs.prim_mst(g) =#
 
+#=
 println("Number of Vertices: ", nodes)
 println("Our implementation (seq):")
-@benchmark seqPrims(g, nodes)
+@benchmark seqPrims(g, nodes) =#
 
 println("Number of Vertices: ", nodes)
 println("Our implementation (parallel):")
