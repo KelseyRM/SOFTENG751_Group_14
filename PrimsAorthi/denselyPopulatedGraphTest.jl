@@ -161,11 +161,14 @@ function seqPrims(G, numberOfNodes)
 end
 
 #Create test graph
-nodes = 100;
+nodes = 10000;
 g = createTestGraph(nodes);
 #primsEdges = LightGraphs.prim_mst(g);
 #seqPrim = seqPrims(g, nodes);
 #paraPrim = parallelPrims(g, nodes);
+println("Dense Graphs")
+
+# Comment and uncomment benchmarks as needed
 
 #=
 println("Number of Vertices: ", nodes)
@@ -177,6 +180,7 @@ println("Number of Vertices: ", nodes)
 println("Our implementation (seq):")
 @benchmark seqPrims(g, nodes) =#
 
+#=
 println("Number of Vertices: ", nodes)
 println("Our implementation (parallel):")
-@benchmark parallelPrims(g, nodes)
+@benchmark parallelPrims(g, nodes) =#
