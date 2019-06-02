@@ -33,15 +33,14 @@ end;
 
 # Finds the node with the lowest edge weight currently in key
 function seqMinKey(key, visited, numberOfNodes)
-    # Creates atomic global variables
-    globalMin = Threads.Atomic{Float64}(Inf);
-    globalIndex = Threads.Atomic{Int}(1);
-
-    localMin = Inf;
-    localIndex = 1;
+    # Creates global variables
+    globalMin = Inf;
+    globalIndex = 1;
 
     # Goes through each unvisited node and checks to see if its edge weight is small than the current local minimum weight
     for i in 1:numberOfNodes
+        localMin = globalMin[];
+        localIndex = globalIndex[];
        if ((visited[i] == 0) && key[i] < localMin)
             localMin = key[i];
             localIndex = i;
@@ -50,8 +49,8 @@ function seqMinKey(key, visited, numberOfNodes)
 
         # Updates the global variables
         if (localMin < globalMin[])
-            Threads.atomic_xchg!(globalMin, localMin)
-            Threads.atomic_xchg!(globalIndex, localIndex)
+            globalMin = localMin;
+            globalIndex = localIndex;
         end
 
     end
@@ -77,7 +76,7 @@ function seqPrims(G, numberOfNodes)
     from[1] = -1; # -1 indicates that this is the starting point of the MST
 
     # Chooses which node to travel to based off what has the lowest value in key
-    for count in 1:(numberOfNodes-1)
+    while 0 in visited
         nextNode = seqMinKey(key, visited, numberOfNodes);
         visited[nextNode] = 1;
 

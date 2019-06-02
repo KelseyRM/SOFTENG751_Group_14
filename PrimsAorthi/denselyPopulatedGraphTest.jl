@@ -9,13 +9,25 @@ using SimpleWeightedGraphs
 using BenchmarkTools
 
 # Create a weighted graph to test with
-function createTestGraph(graphSize)
-    G = SimpleWeightedGraph(graphSize);
+function randomWeightedGraph(graphLength, connections)
+    g = LightGraphs.SimpleGraph(connections)
+    g = barabasi_albert!(g, graphLength, connections)
 
-    for i in 1:(graphSize*5)
-        add_edge!(G, rand(1:graphSize), rand(1:graphSize), rand(Float64)*10);
+    sources = Array{Int64, 1}(undef, ne(g))
+    dests = Array{Int64, 1}(undef, ne(g))
+    weights = Array{Float64, 1}(undef, ne(g))
+
+    unweightedEdges = LightGraphs.edges(g)
+
+    i = 1
+    for edge in unweightedEdges
+        sources[i] = edge.src
+        dests[i] = edge.dst
+        weights[i] = rand(Float64) * 100.0
+        i += 1
     end
-    return G;
+
+    weightedG = SimpleWeightedGraphs.SimpleWeightedGraph(sources, dests, weights)
 end
 
 #PARALLEL CODE
@@ -23,26 +35,27 @@ end
 # Finds the node with the lowest edge weight currently in key
 function parallelMinKey(key, visited, numberOfNodes)
     # Creates atomic global variables
-    globalMin = Threads.Atomic{Float64}(Inf);
-    globalIndex = Threads.Atomic{Int}(1);
+    globalMin = Inf;
+    globalIndex = 1;
 
-    localMin = Inf;
-    localIndex = 1;
+    m = Threads.Mutex();
 
     # Goes through each unvisited node and checks to see if its edge weight is small than the current local minimum weight
     Threads.@threads for i in 1:numberOfNodes
-       if ((visited[i] == 0) && key[i] < localMin)
+        localMin = globalMin[];
+        localIndex = globalIndex[];
+        if ((visited[i] == 0) && (key[i] < localMin))
             localMin = key[i];
             localIndex = i;
-
         end
 
         # Updates the global variables
+        lock(m);
         if (localMin < globalMin[])
-            Threads.atomic_xchg!(globalMin, localMin)
-            Threads.atomic_xchg!(globalIndex, localIndex)
+            globalMin = localMin;
+            globalIndex = localIndex;
         end
-
+        unlock(m);
     end
 
     return globalIndex[];
@@ -66,7 +79,7 @@ function parallelPrims(G, numberOfNodes)
     from[1] = -1; # -1 indicates that this is the starting point of the MST
 
     # Chooses which node to travel to based off what has the lowest value in key
-    for count in 1:(numberOfNodes-1)
+    while 0 in visited
         nextNode = parallelMinKey(key, visited, numberOfNodes);
         visited[nextNode] = 1;
 
@@ -93,15 +106,14 @@ end
 
 # Finds the node with the lowest edge weight currently in key
 function seqMinKey(key, visited, numberOfNodes)
-    # Creates atomic global variables
-    globalMin = Threads.Atomic{Float64}(Inf);
-    globalIndex = Threads.Atomic{Int}(1);
-
-    localMin = Inf;
-    localIndex = 1;
+    # Creates global variables
+    globalMin = Inf;
+    globalIndex = 1;
 
     # Goes through each unvisited node and checks to see if its edge weight is small than the current local minimum weight
     for i in 1:numberOfNodes
+        localMin = globalMin[];
+        localIndex = globalIndex[];
        if ((visited[i] == 0) && key[i] < localMin)
             localMin = key[i];
             localIndex = i;
@@ -110,8 +122,8 @@ function seqMinKey(key, visited, numberOfNodes)
 
         # Updates the global variables
         if (localMin < globalMin[])
-            Threads.atomic_xchg!(globalMin, localMin)
-            Threads.atomic_xchg!(globalIndex, localIndex)
+            globalMin = localMin;
+            globalIndex = localIndex;
         end
 
     end
@@ -137,7 +149,7 @@ function seqPrims(G, numberOfNodes)
     from[1] = -1; # -1 indicates that this is the starting point of the MST
 
     # Chooses which node to travel to based off what has the lowest value in key
-    for count in 1:(numberOfNodes-1)
+    while 0 in visited
         nextNode = seqMinKey(key, visited, numberOfNodes);
         visited[nextNode] = 1;
 
@@ -161,8 +173,9 @@ function seqPrims(G, numberOfNodes)
 end
 
 #Create test graph
-nodes = 10000;
-g = createTestGraph(nodes);
+nodes = 100;
+connections = 5;
+g = randomWeightedGraph(nodes, connections);
 #primsEdges = LightGraphs.prim_mst(g);
 #seqPrim = seqPrims(g, nodes);
 #paraPrim = parallelPrims(g, nodes);
@@ -180,7 +193,7 @@ println("Number of Vertices: ", nodes)
 println("Our implementation (seq):")
 @benchmark seqPrims(g, nodes) =#
 
-#=
+
 println("Number of Vertices: ", nodes)
 println("Our implementation (parallel):")
-@benchmark parallelPrims(g, nodes) =#
+@benchmark parallelPrims(g, nodes)
