@@ -19,7 +19,7 @@ function findNewWork(successor, numberOfThreads)
 end
 
 # Function intended to be called from different threads to make a subset of the MST of graph g
-function partialPrims(g::AbstractGraph{U}, successorArray) where {U}
+function partialPrims(g::AbstractGraph{U}, successorArray, numberOfThreads) where {U}
     
     graphWidth = LightGraphs.nv(g)
     
@@ -155,7 +155,7 @@ function unification(g::AbstractGraph, subtrees)
 end
 
 # Function to run prims on multiple processors
-function prims(g::AbstractGraph, numberOfThreads)
+function prims(g::AbstractGraph, numberOfThreads::Int64)
     
     # Create a successor array shared between threads, used to unify
     graphWidth = LightGraphs.nv(g)
@@ -168,7 +168,7 @@ function prims(g::AbstractGraph, numberOfThreads)
     
     # Run partial prims on multiple threads
     Threads.@threads for i in 1 : numberOfThreads
-        subTree = partialPrims(g, successorArray)
+        subTree = partialPrims(g, successorArray, numberOfThreads)
         totalTree[i] = subTree
     end
     

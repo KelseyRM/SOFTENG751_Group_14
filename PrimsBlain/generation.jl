@@ -50,9 +50,9 @@ function drawEdges(mazeEdges, graphWidth::Int64, pictureName::String)
         source = edge.src
         dest = edge.dst
         sourceX = ((source - 1) % graphWidth)
-        sourceY = convert(Int64, ((source - 1) ÷ graphWidth))
+        sourceY = convert(Int64, ((source - 1) ? graphWidth))
         destX = ((dest - 1) % graphWidth)
-        destY = convert(Int64, ((dest - 1) ÷ graphWidth))
+        destY = convert(Int64, ((dest - 1) ? graphWidth))
 
         rect((10 * sourceX) + 1, (10 * sourceY) + 1, 8 + (10 * (destX - sourceX)), 8 + (10 * (destY - sourceY)), :fill)
     end
