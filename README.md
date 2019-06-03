@@ -43,6 +43,8 @@ Multi-threading: https://docs.julialang.org/en/v1/manual/parallel-computing/inde
 
 ### Testing
 
+>Note: Since the graph generation relies on a number of random functions, it can take a while to generate the graphs and therefore run the tests. To avoid this taking too long we recommend setting the **<num_seconds>** parameter when benchmarking, as specified below.
+
 Before running the correctnes and benchmarking tests, the `setup.jl` file needs to be run to import all dependencies.
 
 1. Navigate through directories in the Julia REPL using 
@@ -102,6 +104,9 @@ An example use of the above command is:
 ```julia
 julia> @benchmark astar(graph, graphWidth, startV, endV) setup=(graph = makeMaze(makeGrid(graphWidth))) samples=samplesToRun seconds=maxRuntime
 ```
+
+See _benchmarkTest.jl_ for the other algorithm tests.
+
 >_**Note:** to ensure results are printed to the terminal after running the benchmark there must not be a semi-colon at the end of the command._
 
 
