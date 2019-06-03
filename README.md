@@ -16,7 +16,7 @@ Julia can be downloaded from https://julialang.org/downloads/.
 Double-clicking on the Julia executable will open the Julia 'read-eval-print loop' or 'REPL'.
 
 ### Setup
-In order to run Julia multi-threaded the number of threads to be used needs to be set **BEFORE** opening and running the REPL. To do this, navigate to julia.exe, then:
+In order to run Julia multi-threaded, the number of threads to be used needs to be set **BEFORE** opening and running the REPL. To do this, navigate to julia.exe, then:
 
 #### On Windows:
 1. Open command prompt
@@ -32,8 +32,6 @@ This can be verified by running `Threads.nthreads()` in the Julia REPL; you shou
 ```julia
 julia> Threads.nthreads()
  4
- 
-julia>
 ```
 
 ### Troubleshooting
