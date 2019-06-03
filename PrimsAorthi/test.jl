@@ -1,8 +1,8 @@
 #comment adding these packages in and out as needed
 #import Pkg;
-#Pkg.add("LightGraphs")
-#Pkg.add("SimpleWeightedGraphs")
-#Pkg.add("BenchmarkTools")
+Pkg.add("LightGraphs")
+Pkg.add("SimpleWeightedGraphs")
+Pkg.add("BenchmarkTools")
 
 using LightGraphs
 using SimpleWeightedGraphs

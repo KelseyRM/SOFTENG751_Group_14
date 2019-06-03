@@ -92,8 +92,8 @@ function heuristic(goal, current, graphWidth)
     
     x1 = (current-1) % graphWidth
     x2 = (goal-1) % graphWidth
-    y1 = (current-1) ÷ graphWidth
-    y2 = (goal-1) ÷ graphWidth    
+    y1 = div((current-1), graphWidth)
+    y2 = div((goal-1), graphWidth)
     return abs(x1-x2) + abs(y1-y2)
     
 end

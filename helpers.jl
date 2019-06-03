@@ -1,17 +1,3 @@
-using GraphPlot
-using LightGraphs
-import LightGraphs
-import LightGraphs.Parallel
-using Compose
-using Fontconfig
-using Cairo
-using Distributed
-using BenchmarkTools
-using SimpleTraits
-import DataStructures
-import SimpleWeightedGraphs
-using Luxor
-
 # Make a graphWidth x graphWidth grid with random weights on edges from 1 : maxWeight
 function makeGrid(graphWidth::Int64, maxWeight::Int64)
     vertexAmount = graphWidth ^ 2
@@ -58,7 +44,7 @@ function makeMaze(g::AbstractGraph)
     
     currentVertex = vertexArray[rand(1:length(vertexArray))]
     push!(closedVertices, currentVertex)
-    filter!(x -> x ? currentVertex, vertexArray)
+    filter!(x -> x != currentVertex, vertexArray)
     
     # Create an array of nodes which we can reach from current set
     reachable = []
@@ -80,7 +66,7 @@ function makeMaze(g::AbstractGraph)
         randomIntersection = rand(1:length(intersection))
         currentVertex = intersection[randomIntersection]
         push!(closedVertices, currentVertex)
-        filter!(x -> x ? currentVertex, vertexArray)
+        filter!(x -> x != currentVertex, vertexArray)
         
         # Add the reachable things
         for reachableVertex in LightGraphs.outneighbors(g, currentVertex) 
@@ -115,9 +101,9 @@ function drawEdges(mazeEdges, graphWidth::Int64, pictureName::String)
         source = edge.src
         dest = edge.dst
         sourceX = ((source - 1) % graphWidth)
-        sourceY = convert(Int64, ((source - 1) ÷ graphWidth))
+        sourceY = convert(Int64, div((source - 1), graphWidth))
         destX = ((dest - 1) % graphWidth)
-        destY = convert(Int64, ((dest - 1) ÷ graphWidth))
+        destY = convert(Int64, div((dest - 1), graphWidth))
 
         rect((10 * sourceX) + 1, (10 * sourceY) + 1, 8 + (10 * (destX - sourceX)), 8 + (10 * (destY - sourceY)), :fill)
     end
@@ -141,9 +127,9 @@ function drawEdges(mazeEdges, path, graphWidth::Int64, pictureName::String)
         source = edge.src
         dest = edge.dst
         sourceX = ((source - 1) % graphWidth)
-        sourceY = convert(Int64, ((source - 1) ÷ graphWidth))
+        sourceY = convert(Int64, div((source - 1), graphWidth))
         destX = ((dest - 1) % graphWidth)
-        destY = convert(Int64, ((dest - 1) ÷ graphWidth))
+        destY = convert(Int64, div((dest - 1), graphWidth))
 
         rect((10 * sourceX) + 1, (10 * sourceY) + 1, 8 + (10 * (destX - sourceX)), 8 + (10 * (destY - sourceY)), :fill)
     end
@@ -154,14 +140,14 @@ function drawEdges(mazeEdges, path, graphWidth::Int64, pictureName::String)
         dest = edge.dst
         if source < dest
             sourceX = ((source - 1) % graphWidth)
-            sourceY = convert(Int64, ((source - 1) ÷ graphWidth))
+            sourceY = convert(Int64, div((source - 1), graphWidth))
             destX = ((dest - 1) % graphWidth)
-            destY = convert(Int64, ((dest - 1) ÷ graphWidth))
+            destY = convert(Int64, div((dest - 1), graphWidth))
         else
             destX = ((source - 1) % graphWidth)
-            destY = convert(Int64, ((source - 1) ÷ graphWidth))
+            destY = convert(Int64, div((source - 1), graphWidth))
             sourceX = ((dest - 1) % graphWidth)
-            sourceY = convert(Int64, ((dest - 1) ÷ graphWidth))
+            sourceY = convert(Int64, div((dest - 1), graphWidth))
         end
 
         rect((10 * sourceX) + 1, (10 * sourceY) + 1, 8 + (10 * (destX - sourceX)), 8 + (10 * (destY - sourceY)), :fill)
@@ -169,6 +155,28 @@ function drawEdges(mazeEdges, path, graphWidth::Int64, pictureName::String)
 
     Luxor.finish()
 end;
+
+# Create a graph with graphLength number of vertices and connections number of edges from each vertex 
+function randomWeightedGraph(graphLength, connections)
+    g = LightGraphs.SimpleGraph(connections)
+    g = barabasi_albert!(g, graphLength, connections)
+    
+    sources = Array{Int64, 1}(undef, ne(g))
+    dests = Array{Int64, 1}(undef, ne(g))
+    weights = Array{Float64, 1}(undef, ne(g))
+    
+    unweightedEdges = LightGraphs.edges(g)
+        
+    i = 1
+    for edge in unweightedEdges
+        sources[i] = edge.src
+        dests[i] = edge.dst
+        weights[i] = rand(Float64) * 100
+        i += 1
+    end
+    
+    weightedG = SimpleWeightedGraphs.SimpleWeightedGraph(sources, dests, weights)
+end
 
 # Example code to draw a maze and its path
 # graphWidth = 100;
